@@ -4,6 +4,7 @@ from pptx import Presentation
 import pandas as pd
 from langchain.embeddings import HuggingFaceBgeEmbeddings
 from transformers import AutoTokenizer
+from VectorData import store_embedding
 
 embeddings = HuggingFaceBgeEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
@@ -41,7 +42,11 @@ file_path = r"C:\Users\madha\Downloads\qbmin.pdf"
 document_text = read_document(file_path)
 chunked_texts = chunk_text(document_text, max_length=512)
 
-text_embeddings = [embeddings.embed_documents([chunk]) for chunk in chunked_texts]
+for idx, chunk in enumerate(chunked_texts):
+    text_embedding = embeddings.embed_documents([chunk])[0]
+    doc_id = f"doc_{os.path.basename(file_path)}_chunk_{idx}"
+    metadata = {"file_path": file_path, "chunk_index": idx}
+    
+    store_embedding(text_embedding, doc_id, metadata)
 
-print("Number of chunks:", len(text_embeddings))
-print("Embedding dimension for each chunk:", len(text_embeddings[0][0]))
+print("All embeddings stored successfully.")
