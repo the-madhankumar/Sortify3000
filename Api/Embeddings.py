@@ -28,25 +28,22 @@ def read_document(file_path):
         text = df.to_string(index=False)
     else:
         with open(file_path, 'r') as file:
-            text = file.read() 
+            text = file.read()
     
     return text
 
-def chunk_text(text, max_length=512):
-    tokens = tokenizer.encode(text, truncation=False)
-    chunks = [tokens[i:i+max_length] for i in range(0, len(tokens), max_length)]
-    return [tokenizer.decode(chunk) for chunk in chunks]
+def create_document_embedding(document_text):
+    document_embedding = embeddings.embed_documents([document_text])[0]
+    return document_embedding
 
 file_path = r"C:\Users\madha\Downloads\qbmin.pdf" 
-
 document_text = read_document(file_path)
-chunked_texts = chunk_text(document_text, max_length=512)
 
-for idx, chunk in enumerate(chunked_texts):
-    text_embedding = embeddings.embed_documents([chunk])[0]
-    doc_id = f"doc_{os.path.basename(file_path)}_chunk_{idx}"
-    metadata = {"file_path": file_path, "chunk_index": idx}
-    
-    store_embedding(text_embedding, doc_id, metadata)
+document_embedding = create_document_embedding(document_text)
 
-print("All embeddings stored successfully.")
+doc_id = f"doc_{os.path.basename(file_path)}"
+metadata = {"file_path": file_path}
+
+store_embedding(document_embedding, doc_id, metadata)
+
+print("Document embedding stored successfully.")
