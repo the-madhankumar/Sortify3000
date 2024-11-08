@@ -1,19 +1,19 @@
 import chromadb
-from chromadb.client import Client
-from chromadb.scheme import Collection
-
+import json
 
 client = chromadb.Client()
 collection = client.create_collection(name="vector_data")
 
-def store_embedding(embedding: List[float], doc_id: str, metadata: Dict[str, str]):
+def store_embedding(embedding: list[float], doc_id: str, metadata: dict[str, str]):
     try:
-        collection.add(
-            embeddings=[embedding],
-            metadatas=[metadata],
-            ids=[doc_id]
-        )
-        import json
+        for i, embeddings in enumerate(embedding):
+            metadata_with_chunk = metadata.copy()
+            metadata_with_chunk.update({"doc_id": doc_id, "chunk_index": i})
+            collection.add(
+                embeddings=[embedding],
+                metadatas=[metadata],
+                ids=[doc_id]
+            )
         result = {
             "success": True,
             "message": "Embedding stored successfully"
